@@ -52,7 +52,7 @@ function get_cache_files() {
     local max_parallel=${3-16}
     ## Get the cache files running grep in parallel for each top level
     ## cache dir.
-    find $2 -maxdepth 1 -type d | xargs -P $max_parallel -n 1 grep -Rl "KEY:.*$1" | sort -u
+    find "$2" -maxdepth 1 -type d | xargs -P $max_parallel -n 1 grep -Rl "KEY:.*$1" | sort -u
 } # get_cache_files
 
 ## Print the cache item key.
@@ -74,17 +74,17 @@ function nginx_cache_inspect_item() {
     local cache_files key ttl expires
 
     [ -d $2 ] || exit 2
-    cache_files=$(get_cache_files "$1" $2)
+    cache_files=$(get_cache_files "$1" "$2")
 
     ## Act based on grep result.
     if [ -n "$cache_files" ]; then
         ## Loop over all matched items.
-        for i in $cache_files; do
+        for i in "$cache_files"; do
             [ -f $i ] || continue
-            key=$(get_cache_item_key $i)
+            key=$(get_cache_item_key "$i")
             if [ -n "$key" ]; then
                 echo "file: $i"
-                ttl=$(get_cache_item_ttl $i)
+                ttl=$(get_cache_item_ttl "$i")
                 ## If the expire timestamp is negative that means that
                 ## the item is not found or other error.
                 [ $ttl -lt 0 ] && echo "404 Not found" && continue
@@ -99,4 +99,4 @@ function nginx_cache_inspect_item() {
 } # nginx_cache_inspect_item
 
 ## Inspect the specified cache item(s).
-nginx_cache_inspect_item $1 $2
+nginx_cache_inspect_item "$1" "$2"
